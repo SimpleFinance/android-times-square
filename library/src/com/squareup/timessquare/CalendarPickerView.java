@@ -299,7 +299,7 @@ public class CalendarPickerView extends ListView {
           invalidDateListener.onInvalidDateSelected(clickedDate);
         }
       } else {
-        boolean wasSelected = doSelectDate(clickedDate, cell);
+        boolean wasSelected = doSelectDate(clickedDate, cell, false);
 
         if (wasSelected && dateListener != null) {
           dateListener.onDateSelected(clickedDate);
@@ -321,18 +321,36 @@ public class CalendarPickerView extends ListView {
    * @return - whether we were able to set the date
    */
   public boolean selectDate(Date date) {
+    return selectDate(date, false);
+  }
+
+  /**
+   * Select a new date.  Respects the {@link SelectionMode} this CalendarPickerView is configured
+   * with: if you are in {@link SelectionMode#SINGLE}, the previously selected date will be
+   * un-selected.  In {@link SelectionMode#MULTIPLE}, the new date will be added to the list of
+   * selected dates.  TODO figure out the behavior in {@link SelectionMode#PERIOD} and
+   * TODO {@link SelectionMode#SELECTED_PERIOD} and document here.  Write tests for this.
+   * <p/>
+   * If the selection was made (selectable date, in range), the view will scroll to the newly
+   * selected date if it's not already visible.
+   * <p/>
+   * @param override set the date as selected even if user selection is not allowed
+   *
+   * @return - whether we were able to set the date
+   */
+  public boolean selectDate(Date date, boolean override) {
     MonthCellWithMonthIndex monthCellWithMonthIndex = getMonthCellWithIndexByDate(date);
-    if (monthCellWithMonthIndex == null || !isDateSelectable(date)) {
+    if (monthCellWithMonthIndex == null || !override && !isDateSelectable(date)) {
       return false;
     }
-    boolean wasSelected = doSelectDate(date, monthCellWithMonthIndex.cell);
+    boolean wasSelected = doSelectDate(date, monthCellWithMonthIndex.cell, override);
     if (wasSelected) {
       scrollToSelectedMonth(monthCellWithMonthIndex.monthIndex);
     }
     return wasSelected;
   }
 
-  private boolean doSelectDate(Date date, MonthCellDescriptor cell) {
+  private boolean doSelectDate(Date date, MonthCellDescriptor cell, boolean override) {
     Calendar selectedCal = Calendar.getInstance();
     selectedCal.setTime(date);
 
@@ -416,7 +434,7 @@ public class CalendarPickerView extends ListView {
             for (MonthCellDescriptor singleCell : week) {
               if (singleCell.getDate().after(start)
                   && singleCell.getDate().before(end)
-                  && singleCell.isSelectable()) {
+                  && (override ? singleCell.isCurrentMonth() : singleCell.isSelectable())) {
                 singleCell.setSelected(true);
                 singleCell.setPeriodMiddle(true);
                 selectedCells.add(singleCell);
@@ -473,7 +491,7 @@ public class CalendarPickerView extends ListView {
       for (List<MonthCellDescriptor> weekCells : monthCells) {
         for (MonthCellDescriptor actCell : weekCells) {
           actCal.setTime(actCell.getDate());
-          if (sameDate(actCal, searchCal) && actCell.isSelectable()) {
+          if (sameDate(actCal, searchCal) && actCell.isCurrentMonth()) {
             return new MonthCellWithMonthIndex(actCell, index);
           }
         }
