@@ -1,23 +1,6 @@
 // Copyright 2012 Square, Inc.
 package com.squareup.timessquare;
 
-import android.content.Context;
-import android.util.AttributeSet;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.ListView;
-import android.widget.Toast;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-
 import static java.util.Calendar.DATE;
 import static java.util.Calendar.DAY_OF_MONTH;
 import static java.util.Calendar.DAY_OF_WEEK;
@@ -27,6 +10,25 @@ import static java.util.Calendar.MINUTE;
 import static java.util.Calendar.MONTH;
 import static java.util.Calendar.SECOND;
 import static java.util.Calendar.YEAR;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+
+import android.R;
+import android.content.Context;
+import android.util.AttributeSet;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ListView;
+import android.widget.Toast;
 
 /**
  * Android component to allow picking a date from a calendar view (a list of months).  Must be
@@ -354,9 +356,9 @@ public class CalendarPickerView extends ListView {
     Calendar selectedCal = Calendar.getInstance();
     selectedCal.setTime(date);
 
-    // Clear any remaining period state
+    // Clear any remaining period state.
     for (MonthCellDescriptor selectedCell : selectedCells) {
-      selectedCell.clearPeriodState();
+      selectedCell.setPeriodState(PeriodState.NONE);
     }
 
     switch (selectionMode) {
@@ -420,13 +422,13 @@ public class CalendarPickerView extends ListView {
         if (selectedCells.get(0).getDate().after(selectedCells.get(1).getDate())) {
           start = selectedCells.get(1).getDate();
           end = selectedCells.get(0).getDate();
-          selectedCells.get(1).setPeriodFirst(true);
-          selectedCells.get(0).setPeriodLast(true);
+          selectedCells.get(1).setPeriodState(PeriodState.FIRST);
+          selectedCells.get(0).setPeriodState(PeriodState.LAST);
         } else {
           start = selectedCells.get(0).getDate();
           end = selectedCells.get(1).getDate();
-          selectedCells.get(0).setPeriodFirst(true);
-          selectedCells.get(1).setPeriodLast(true);
+          selectedCells.get(0).setPeriodState(PeriodState.FIRST);
+          selectedCells.get(1).setPeriodState(PeriodState.LAST);
         }
 
         for (List<List<MonthCellDescriptor>> month : cells) {
@@ -434,9 +436,9 @@ public class CalendarPickerView extends ListView {
             for (MonthCellDescriptor singleCell : week) {
               if (singleCell.getDate().after(start)
                   && singleCell.getDate().before(end)
-                  && (override ? singleCell.isCurrentMonth() : singleCell.isSelectable())) {
+                  && (override || singleCell.isSelectable())) {
                 singleCell.setSelected(true);
-                singleCell.setPeriodMiddle(true);
+                singleCell.setPeriodState(PeriodState.MIDDLE);
                 selectedCells.add(singleCell);
               }
             }
@@ -542,6 +544,10 @@ public class CalendarPickerView extends ListView {
     cal.set(DAY_OF_MONTH, 1);
     int firstDayOfWeek = cal.get(DAY_OF_WEEK);
     cal.add(DATE, cal.getFirstDayOfWeek() - firstDayOfWeek);
+
+    Calendar minSelectedCal = minDate(selectedCals);
+    Calendar maxSelectedCal = maxDate(selectedCals);
+
     while ((cal.get(MONTH) < month.getMonth() + 1 || cal.get(YEAR) < month.getYear()) //
         && cal.get(YEAR) <= month.getYear()) {
       Logr.d("Building week row starting at %s", cal.getTime());
@@ -555,8 +561,21 @@ public class CalendarPickerView extends ListView {
             isCurrentMonth && betweenDates(cal, minCal, maxCal) && isDateSelectable(date);
         boolean isToday = sameDate(cal, today);
         int value = cal.get(DAY_OF_MONTH);
+
+        PeriodState periodState = PeriodState.NONE;
+        if (selectedCals != null && selectedCals.size() > 1) {
+          if (sameDate(minSelectedCal, cal)) {
+            periodState = PeriodState.FIRST;
+          } else if (sameDate(maxDate(selectedCals), cal)) {
+            periodState = PeriodState.LAST;
+          } else if (betweenDates(cal, minSelectedCal, maxSelectedCal)) {
+            periodState = PeriodState.MIDDLE;
+          }
+        }
+
         MonthCellDescriptor cell =
-            new MonthCellDescriptor(date, isCurrentMonth, isSelectable, isSelected, isToday, value);
+            new MonthCellDescriptor(date, isCurrentMonth, isSelectable, isSelected, isToday, value,
+                periodState);
         if (isSelected) {
           selectedCells.add(cell);
         }
@@ -576,22 +595,20 @@ public class CalendarPickerView extends ListView {
     return false;
   }
 
-  private static boolean minDate(List<Calendar> selectedCals, Calendar cal) {
-    for (Calendar selectedCal : selectedCals) {
-      if (cal.after(selectedCal)) {
-        return false;
-      }
+  private static Calendar minDate(List<Calendar> selectedCals) {
+    if (selectedCals == null || selectedCals.size() == 0) {
+      return null;
     }
-    return true;
+    Collections.sort(selectedCals);
+    return selectedCals.get(0);
   }
 
-  private static boolean maxDate(List<Calendar> selectedCals, Calendar cal) {
-    for (Calendar selectedCal : selectedCals) {
-      if (cal.before(selectedCal)) {
-        return false;
-      }
+  private static Calendar maxDate(List<Calendar> selectedCals) {
+    if (selectedCals == null || selectedCals.size() == 0) {
+      return null;
     }
-    return true;
+    Collections.sort(selectedCals);
+    return selectedCals.get(selectedCals.size() - 1);
   }
 
   private static boolean sameDate(Calendar cal, Calendar selectedDate) {
