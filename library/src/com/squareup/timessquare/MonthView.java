@@ -1,35 +1,22 @@
 // Copyright 2012 Square, Inc.
 package com.squareup.timessquare;
 
+import java.text.DateFormat;
+import java.util.List;
+
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.TextView;
-import java.text.DateFormat;
-import java.util.Calendar;
-import java.util.List;
 
 public class MonthView extends LinearLayout {
-  private TextView title;
   private CalendarGridView grid;
   private Listener listener;
 
   public static MonthView create(ViewGroup parent, LayoutInflater inflater,
-      DateFormat weekdayNameFormat, Listener listener, Calendar today) {
+      DateFormat weekdayNameFormat, Listener listener) {
     final MonthView view = (MonthView) inflater.inflate(R.layout.month, parent, false);
-
-    final int originalDayOfWeek = today.get(Calendar.DAY_OF_WEEK);
-
-    int firstDayOfWeek = today.getFirstDayOfWeek();
-    final CalendarRowView headerRow = (CalendarRowView) view.grid.getChildAt(0);
-    for (int offset = 0; offset < 7; offset++) {
-      today.set(Calendar.DAY_OF_WEEK, firstDayOfWeek + offset);
-      final TextView textView = (TextView) headerRow.getChildAt(offset);
-      textView.setText(weekdayNameFormat.format(today.getTime()));
-    }
-    today.set(Calendar.DAY_OF_WEEK, originalDayOfWeek);
     view.listener = listener;
     return view;
   }
@@ -40,18 +27,16 @@ public class MonthView extends LinearLayout {
 
   @Override protected void onFinishInflate() {
     super.onFinishInflate();
-    title = (TextView) findViewById(R.id.title);
     grid = (CalendarGridView) findViewById(R.id.calendar_grid);
   }
 
   public void init(MonthDescriptor month, List<List<MonthCellDescriptor>> cells) {
     Logr.d("Initializing MonthView for %s", month);
     long start = System.currentTimeMillis();
-    title.setText(month.getLabel());
 
     final int numRows = cells.size();
     for (int i = 0; i < 6; i++) {
-      CalendarRowView weekRow = (CalendarRowView) grid.getChildAt(i + 1);
+      CalendarRowView weekRow = (CalendarRowView) grid.getChildAt(i);
       weekRow.setListener(listener);
       if (i < numRows) {
         weekRow.setVisibility(VISIBLE);
@@ -61,11 +46,9 @@ public class MonthView extends LinearLayout {
           CalendarCellView cellView = (CalendarCellView) weekRow.getChildAt(c);
 
           cellView.setText(Integer.toString(cell.getValue()));
-          cellView.setEnabled(cell.isCurrentMonth());
-
+          cellView.setEnabled(true);
           cellView.setSelectable(cell.isSelectable());
           cellView.setSelected(cell.isSelected());
-          cellView.setCurrentMonth(cell.isCurrentMonth());
           cellView.setToday(cell.isToday());
           cellView.setPeriodState(cell.getPeriodState());
           cellView.setTag(cell);

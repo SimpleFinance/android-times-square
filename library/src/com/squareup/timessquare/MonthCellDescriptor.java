@@ -12,16 +12,14 @@ class MonthCellDescriptor {
 
   private final Date date;
   private final int value;
-  private final boolean isCurrentMonth;
   private boolean isSelected;
   private final boolean isToday;
   private final boolean isSelectable;
   private PeriodState periodState;
 
-  MonthCellDescriptor(Date date, boolean currentMonth, boolean selectable, boolean selected,
+  MonthCellDescriptor(Date date, boolean selectable, boolean selected,
       boolean today, int value, PeriodState periodState) {
     this.date = date;
-    isCurrentMonth = currentMonth;
     isSelectable = selectable;
     isSelected = selected;
     isToday = today;
@@ -31,10 +29,6 @@ class MonthCellDescriptor {
 
   public Date getDate() {
     return date;
-  }
-
-  public boolean isCurrentMonth() {
-    return isCurrentMonth;
   }
 
   public boolean isSelectable() {
@@ -71,8 +65,6 @@ class MonthCellDescriptor {
         + date
         + ", value="
         + value
-        + ", isCurrentMonth="
-        + isCurrentMonth
         + ", isSelected="
         + isSelected
         + ", isToday="

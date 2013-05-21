@@ -2,19 +2,16 @@
 
 package com.squareup.timessquare;
 
-import com.squareup.timessquare.MonthCellDescriptor.PeriodState;
-
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.TextView;
+
+import com.squareup.timessquare.MonthCellDescriptor.PeriodState;
 
 public class CalendarCellView extends TextView {
 
   private static final int[] STATE_SELECTABLE = {
       R.attr.state_selectable
-  };
-  private static final int[] STATE_CURRENT_MONTH = {
-      R.attr.state_current_month
   };
   private static final int[] STATE_TODAY = {
       R.attr.state_today
@@ -30,7 +27,6 @@ public class CalendarCellView extends TextView {
   };
 
   private boolean isSelectable = false;
-  private boolean isCurrentMonth = false;
   private boolean isToday = false;
   private PeriodState periodState = PeriodState.NONE;
 
@@ -51,11 +47,6 @@ public class CalendarCellView extends TextView {
     refreshDrawableState();
   }
 
-  public void setCurrentMonth(boolean isCurrentMonth) {
-    this.isCurrentMonth = isCurrentMonth;
-    refreshDrawableState();
-  }
-
   public void setToday(boolean isToday) {
     this.isToday = isToday;
     refreshDrawableState();
@@ -67,14 +58,10 @@ public class CalendarCellView extends TextView {
   }
 
   @Override protected int[] onCreateDrawableState(int extraSpace) {
-    final int[] drawableState = super.onCreateDrawableState(extraSpace + 6);
+        final int[] drawableState = super.onCreateDrawableState(extraSpace + 3);
 
     if (isSelectable) {
       mergeDrawableStates(drawableState, STATE_SELECTABLE);
-    }
-
-    if (isCurrentMonth) {
-      mergeDrawableStates(drawableState, STATE_CURRENT_MONTH);
     }
 
     if (isToday) {
