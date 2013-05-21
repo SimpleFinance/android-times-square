@@ -3,6 +3,8 @@
 package com.squareup.timessquare;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.widget.TextView;
 
@@ -30,16 +32,53 @@ public class CalendarCellView extends TextView {
   private boolean isToday = false;
   private PeriodState periodState = PeriodState.NONE;
 
+  private ColorStateList shadowColor;
+  private float shadowDx;
+  private float shadowDy;
+  private float shadowRadius;
+
   public CalendarCellView(Context context) {
     super(context);
   }
 
   public CalendarCellView(Context context, AttributeSet attrs) {
     super(context, attrs);
+    init(context, attrs, 0);
+
   }
 
   public CalendarCellView(Context context, AttributeSet attrs, int defStyle) {
     super(context, attrs, defStyle);
+    init(context, attrs, defStyle);
+  }
+
+  private void init(Context context, AttributeSet attrs, int defStyle) {
+    TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.CalendarCellView, defStyle,
+        0);
+    final int attributeCount = a.getIndexCount();
+    for (int i = 0; i < attributeCount; i++) {
+      int attr = a.getIndex(i);
+
+      switch (attr) {
+        case R.styleable.CalendarCellView_shadowColors:
+          shadowColor = a.getColorStateList(attr);
+          break;
+
+        case R.styleable.CalendarCellView_shadowDx:
+          shadowDx = a.getDimension(attr, 0);
+          break;
+
+        case R.styleable.CalendarCellView_shadowDy:
+          shadowDy = a.getDimension(attr, 0);
+          break;
+
+        case R.styleable.CalendarCellView_shadowRadius:
+          shadowRadius = a.getDimension(attr, 0);
+          break;
+      }
+    }
+    a.recycle();
+    updateShadowColor();
   }
 
   public void setSelectable(boolean isSelectable) {
@@ -58,7 +97,7 @@ public class CalendarCellView extends TextView {
   }
 
   @Override protected int[] onCreateDrawableState(int extraSpace) {
-        final int[] drawableState = super.onCreateDrawableState(extraSpace + 3);
+    final int[] drawableState = super.onCreateDrawableState(extraSpace + 3);
 
     if (isSelectable) {
       mergeDrawableStates(drawableState, STATE_SELECTABLE);
@@ -77,5 +116,18 @@ public class CalendarCellView extends TextView {
     }
 
     return drawableState;
+  }
+
+  @Override protected void drawableStateChanged() {
+    super.drawableStateChanged();
+    updateShadowColor();
+  }
+
+  private void updateShadowColor() {
+    if (shadowColor != null) {
+      setShadowLayer(shadowRadius, shadowDx, shadowDy,
+          shadowColor.getColorForState(getDrawableState(), 0));
+      invalidate();
+    }
   }
 }
