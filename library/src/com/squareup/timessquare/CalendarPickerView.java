@@ -89,6 +89,7 @@ public class CalendarPickerView extends ListView {
     monthNameFormat = new SimpleDateFormat(context.getString(R.string.month_name_format));
     weekdayNameFormat = new SimpleDateFormat(context.getString(R.string.day_name_format));
     fullDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
+    setOnScrollListener(onScrollListener);
 
     if (isInEditMode()) {
       Calendar nextYear = Calendar.getInstance();
@@ -549,10 +550,17 @@ public class CalendarPickerView extends ListView {
   private OnScrollListener onScrollListener = new OnScrollListener() {
     @Override public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
         int totalItemCount) {
-      if (monthListener != null && firstVisibleItem != visibleMonth) {
-        visibleMonth = firstVisibleItem;
-        MonthDescriptor month = months.get(firstVisibleItem);
-        monthListener.onMonthDisplayed(month);
+      if (monthListener != null) {
+        // Get point at center of view
+        int centerX = view.getWidth() / 2;
+        int centerY = view.getHeight() / 2;
+        int centerItem = view.pointToPosition(centerX, centerY);
+
+        if (centerItem != visibleMonth && centerItem != INVALID_POSITION) {
+          visibleMonth = centerItem;
+          MonthDescriptor month = months.get(visibleMonth);
+          monthListener.onMonthDisplayed(month.getMonth(), month.getYear());
+        }
       }
     }
 
@@ -756,7 +764,7 @@ public class CalendarPickerView extends ListView {
    * Interface called when a month has appeared on the screen.
    */
   public interface OnMonthDisplayedListener {
-    void onMonthDisplayed(MonthDescriptor month);
+    void onMonthDisplayed(int month, int year);
   }
 
   private class DefaultOnInvalidDateSelectedListener implements OnInvalidDateSelectedListener {
