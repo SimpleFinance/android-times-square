@@ -19,9 +19,6 @@ public class CalendarCellView extends TextView {
   private static final int[] STATE_SELECTABLE = {
       R.attr.state_selectable
   };
-  private static final int[] STATE_CURRENT_MONTH = {
-      R.attr.state_current_month
-  };
   private static final int[] STATE_TODAY = {
       R.attr.state_today
   };
@@ -39,7 +36,6 @@ public class CalendarCellView extends TextView {
       new LruCache<String, Typeface>(12);
 
   private boolean isSelectable = false;
-  private boolean isCurrentMonth = false;
   private boolean isToday = false;
   private PeriodState periodState = PeriodState.NONE;
 
@@ -120,11 +116,6 @@ public class CalendarCellView extends TextView {
     refreshDrawableState();
   }
 
-  public void setCurrentMonth(boolean isCurrentMonth) {
-    this.isCurrentMonth = isCurrentMonth;
-    refreshDrawableState();
-  }
-
   public void setToday(boolean isToday) {
     this.isToday = isToday;
     refreshDrawableState();
@@ -140,10 +131,6 @@ public class CalendarCellView extends TextView {
 
     if (isSelectable) {
       mergeDrawableStates(drawableState, STATE_SELECTABLE);
-    }
-
-    if (isCurrentMonth) {
-      mergeDrawableStates(drawableState, STATE_CURRENT_MONTH);
     }
 
     if (isToday) {

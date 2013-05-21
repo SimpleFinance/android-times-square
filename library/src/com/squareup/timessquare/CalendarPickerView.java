@@ -4,7 +4,6 @@ package com.squareup.timessquare;
 
 import static java.util.Calendar.DATE;
 import static java.util.Calendar.DAY_OF_MONTH;
-import static java.util.Calendar.DAY_OF_WEEK;
 import static java.util.Calendar.HOUR_OF_DAY;
 import static java.util.Calendar.MILLISECOND;
 import static java.util.Calendar.MINUTE;
@@ -367,17 +366,21 @@ public class CalendarPickerView extends ListView {
   }
 
   /**
-   * Select a new date.  Respects the {@link SelectionMode} this CalendarPickerView is configured
-   * with: if you are in {@link SelectionMode#SINGLE}, the previously selected date will be
-   * un-selected.  In {@link SelectionMode#MULTIPLE}, the new date will be added to the list of
-   * selected dates.  TODO figure out the behavior in {@link SelectionMode#PERIOD} and
-   * TODO {@link SelectionMode#SELECTED_PERIOD} and document here.  Write tests for this.
+   * Select a new date. Respects the {@link SelectionMode} this
+   * CalendarPickerView is configured with: if you are in
+   * {@link SelectionMode#SINGLE}, the previously selected date will be
+   * un-selected. In {@link SelectionMode#MULTIPLE}, the new date will be added
+   * to the list of selected dates. TODO figure out the behavior in
+   * {@link SelectionMode#PERIOD} and TODO {@link SelectionMode#SELECTED_PERIOD}
+   * and document here. Write tests for this.
    * <p/>
-   * If the selection was made (selectable date, in range), the view will scroll to the newly
-   * selected date if it's not already visible.
+   * If the selection was made (selectable date, in range), the view will scroll
+   * to the newly selected date if it's not already visible.
    * <p/>
-   * @param override set the date as selected even if user selection is not allowed
-   *
+   * 
+   * @param override set the date as selected even if user selection is not
+   *          allowed
+   * 
    * @return - whether we were able to set the date
    */
   public boolean selectDate(Date date, boolean override) {
@@ -778,7 +781,7 @@ public class CalendarPickerView extends ListView {
   public interface DateSelectableFilter {
     boolean isDateSelectable(Date date);
   }
-
+  
   /**
    * Interface called when a month has appeared on the screen.
    */
