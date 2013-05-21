@@ -3,8 +3,12 @@
 package com.squareup.timessquare;
 
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
+import android.graphics.Typeface;
+import android.support.v4.util.LruCache;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.widget.TextView;
 
@@ -28,14 +32,33 @@ public class CalendarCellView extends TextView {
       R.attr.state_period_last
   };
 
+  private static LruCache<String, Typeface> typefaceCache =
+      new LruCache<String, Typeface>(12);
+
   private boolean isSelectable = false;
   private boolean isToday = false;
   private PeriodState periodState = PeriodState.NONE;
 
+  private String typefaceName;
   private ColorStateList shadowColor;
   private float shadowDx;
   private float shadowDy;
   private float shadowRadius;
+
+  public static Typeface getTypeface(Context context, String family) {
+    Typeface typeface = typefaceCache.get(family);
+
+    if (typeface == null) {
+      AssetManager am = context.getApplicationContext().getAssets();
+      typeface = Typeface.createFromAsset(am,
+          String.format("fonts/%s-Family.otf", family));
+
+      // Cache the Typeface object
+      typefaceCache.put(family, typeface);
+    }
+
+    return typeface;
+  }
 
   public CalendarCellView(Context context) {
     super(context);
@@ -60,6 +83,13 @@ public class CalendarCellView extends TextView {
       int attr = a.getIndex(i);
 
       switch (attr) {
+        case R.styleable.CalendarCellView_calendarCellTypeface:
+          typefaceName = a.getString(attr);
+          if (!TextUtils.isEmpty(typefaceName) && !isInEditMode()) {
+            setTypeface(getTypeface(context, typefaceName));
+          }
+          break;
+
         case R.styleable.CalendarCellView_shadowColors:
           shadowColor = a.getColorStateList(attr);
           break;

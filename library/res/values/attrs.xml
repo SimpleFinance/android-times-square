@@ -10,6 +10,7 @@
   </declare-styleable>
   
   <declare-styleable name="CalendarCellView">
+    <attr name="calendarCellTypeface" format="string" />
     <attr name="shadowColors" format="color|reference" />
     <attr name="shadowDx" format="dimension" />
     <attr name="shadowDy" format="dimension" />
