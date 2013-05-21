@@ -546,8 +546,10 @@ public class CalendarPickerView extends ListView {
     }
     return null;
   }
-  
+
   private OnScrollListener onScrollListener = new OnScrollListener() {
+    private boolean shouldUpdateCells;
+
     @Override public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
         int totalItemCount) {
       if (monthListener != null) {
@@ -555,16 +557,32 @@ public class CalendarPickerView extends ListView {
         int centerX = view.getWidth() / 2;
         int centerY = view.getHeight() / 2;
         int centerItem = view.pointToPosition(centerX, centerY);
-
-        if (centerItem != visibleMonth && centerItem != INVALID_POSITION) {
+        if (centerItem != INVALID_POSITION && centerItem != visibleMonth) {
           visibleMonth = centerItem;
           MonthDescriptor month = months.get(visibleMonth);
           monthListener.onMonthDisplayed(month.getMonth(), month.getYear());
+          shouldUpdateCells = true;
         }
       }
     }
 
     @Override public void onScrollStateChanged(AbsListView view, int scrollState) {
+      if (shouldUpdateCells && scrollState == SCROLL_STATE_IDLE) {
+        Calendar cal = Calendar.getInstance();
+        MonthDescriptor month = months.get(visibleMonth);
+
+        for (List<List<MonthCellDescriptor>> monthCells : cells) {
+          for (List<MonthCellDescriptor> week : monthCells) {
+            for (MonthCellDescriptor cell : week) {
+              cal.setTime(cell.getDate());
+              cell.setCurrentMonth(cal.get(MONTH) == month.getMonth());
+            }
+          }
+        }
+
+        adapter.notifyDataSetChanged();
+        shouldUpdateCells = false;
+      }
     }
   };
 
@@ -611,6 +629,8 @@ public class CalendarPickerView extends ListView {
     Calendar minSelectedCal = minDate(selectedCals);
     Calendar maxSelectedCal = maxDate(selectedCals);
 
+    MonthDescriptor currentMonth = months.size() > 0 ? months.get(visibleMonth) : null;
+
     while (cal.before(endCal)) {
       Logr.d("Building week row starting at %s", cal.getTime());
       List<MonthCellDescriptor> weekCells = new ArrayList<MonthCellDescriptor>();
@@ -619,6 +639,8 @@ public class CalendarPickerView extends ListView {
         Date date = cal.getTime();
         boolean isSelected = containsDate(selectedCals, cal);
         boolean isSelectable = betweenDates(cal, minCal, maxCal) && isDateSelectable(date);
+        boolean isCurrentMonth = currentMonth != null && cal.get(MONTH) == currentMonth.getMonth()
+            && cal.get(YEAR) == currentMonth.getYear();
         boolean isToday = sameDate(cal, today);
         int value = cal.get(DAY_OF_MONTH);
 
@@ -634,7 +656,7 @@ public class CalendarPickerView extends ListView {
         }
 
         MonthCellDescriptor cell =
-            new MonthCellDescriptor(date, isSelectable, isSelected, isToday, value,
+            new MonthCellDescriptor(date, isSelectable, isSelected, isCurrentMonth, isToday, value,
                 periodState);
         if (isSelected) {
           selectedCells.add(cell);
@@ -759,7 +781,7 @@ public class CalendarPickerView extends ListView {
   public interface DateSelectableFilter {
     boolean isDateSelectable(Date date);
   }
-  
+
   /**
    * Interface called when a month has appeared on the screen.
    */
