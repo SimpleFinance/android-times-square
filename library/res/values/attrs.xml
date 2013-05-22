@@ -8,4 +8,12 @@
     <attr name="state_period_middle" format="boolean" />
     <attr name="state_period_last" format="boolean" />
   </declare-styleable>
+  
+  <declare-styleable name="CalendarCellView">
+    <attr name="calendarCellTypeface" format="string" />
+    <attr name="shadowColors" format="color|reference" />
+    <attr name="shadowDx" format="dimension" />
+    <attr name="shadowDy" format="dimension" />
+    <attr name="shadowRadius" format="dimension" />
+  </declare-styleable>
 </resources>

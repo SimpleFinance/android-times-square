@@ -1,18 +1,15 @@
 // Copyright 2012 Square, Inc.
 package com.squareup.timessquare;
 
+import static android.view.View.MeasureSpec.EXACTLY;
+import static android.view.View.MeasureSpec.makeMeasureSpec;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 
-import static android.view.View.MeasureSpec.AT_MOST;
-import static android.view.View.MeasureSpec.EXACTLY;
-import static android.view.View.MeasureSpec.makeMeasureSpec;
-
 /** TableRow that draws a divider between each cell. To be used with {@link CalendarGridView}. */
 public class CalendarRowView extends ViewGroup implements View.OnClickListener {
-  private boolean isHeaderRow;
   private MonthView.Listener listener;
   private int cellSize;
   private int oldWidthMeasureSpec;
@@ -38,7 +35,7 @@ public class CalendarRowView extends ViewGroup implements View.OnClickListener {
     final int totalWidth = MeasureSpec.getSize(widthMeasureSpec);
     cellSize = totalWidth / 7;
     int cellWidthSpec = makeMeasureSpec(cellSize, EXACTLY);
-    int cellHeightSpec = isHeaderRow ? makeMeasureSpec(cellSize, AT_MOST) : cellWidthSpec;
+    int cellHeightSpec = cellWidthSpec;
     int rowHeight = 0;
     for (int c = 0, numChildren = getChildCount(); c < numChildren; c++) {
       final View child = getChildAt(c);
@@ -64,10 +61,6 @@ public class CalendarRowView extends ViewGroup implements View.OnClickListener {
       child.layout(c * cellSize, 0, (c + 1) * cellSize, cellHeight);
     }
     Logr.d("Row.onLayout %d ms", System.currentTimeMillis() - start);
-  }
-
-  public void setIsHeaderRow(boolean isHeaderRow) {
-    this.isHeaderRow = isHeaderRow;
   }
 
   @Override public void onClick(View v) {
