@@ -1,16 +1,15 @@
 // Copyright 2012 Square, Inc.
 package com.squareup.timessquare;
 
+import static android.view.View.MeasureSpec.AT_MOST;
+import static android.view.View.MeasureSpec.EXACTLY;
+import static android.view.View.MeasureSpec.makeMeasureSpec;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
-
-import static android.view.View.MeasureSpec.AT_MOST;
-import static android.view.View.MeasureSpec.EXACTLY;
-import static android.view.View.MeasureSpec.makeMeasureSpec;
 
 /**
  * ViewGroup that draws a grid of calendar cells.  All children must be {@link CalendarRowView}s.
@@ -25,9 +24,6 @@ public class CalendarGridView extends ViewGroup {
   }
 
   @Override public void addView(View child, int index, ViewGroup.LayoutParams params) {
-    if (getChildCount() == 0) {
-      ((CalendarRowView) child).setIsHeaderRow(true);
-    }
     super.addView(child, index, params);
   }
 
