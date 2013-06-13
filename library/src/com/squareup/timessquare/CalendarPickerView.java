@@ -29,7 +29,6 @@ import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
-
 import com.squareup.timessquare.MonthCellDescriptor.PeriodState;
 
 /**
@@ -270,6 +269,9 @@ public class CalendarPickerView extends ListView {
     adapter.notifyDataSetChanged();
     if (selectedIndex != 0 || todayIndex != 0) {
       scrollToSelectedMonth(selectedIndex != 0 ? selectedIndex : todayIndex);
+    } else if (monthListener != null) {
+      monthListener.onMonthDisplayed(minCal.get(MONTH), minCal.get(YEAR));
+      onScrollListener.onScrollStateChanged(this, OnScrollListener.SCROLL_STATE_IDLE);
     }
   }
 
@@ -548,7 +550,7 @@ public class CalendarPickerView extends ListView {
   }
 
   private OnScrollListener onScrollListener = new OnScrollListener() {
-    private boolean shouldUpdateCells;
+    private boolean shouldUpdateCells = true;
 
     @Override public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
         int totalItemCount) {
