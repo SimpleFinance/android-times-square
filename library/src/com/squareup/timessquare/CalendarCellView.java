@@ -2,6 +2,8 @@
 
 package com.squareup.timessquare;
 
+import com.squareup.timessquare.MonthCellDescriptor.PeriodState;
+
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.content.res.ColorStateList;
@@ -11,8 +13,6 @@ import android.support.v4.util.LruCache;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.widget.TextView;
-
-import com.squareup.timessquare.MonthCellDescriptor.PeriodState;
 
 public class CalendarCellView extends TextView {
 
@@ -55,7 +55,7 @@ public class CalendarCellView extends TextView {
     if (typeface == null) {
       AssetManager am = context.getApplicationContext().getAssets();
       typeface = Typeface.createFromAsset(am,
-          String.format("fonts/%s-Family.otf", family));
+          String.format("fonts/%s", family));
 
       // Cache the Typeface object
       typefaceCache.put(family, typeface);
